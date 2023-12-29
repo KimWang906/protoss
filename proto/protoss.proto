@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package protoss;
+
+message SignUp {
+    string username = 1;
+    string password = 2;
+}
+
+message SignUpResponse {
+    string username = 1;
+    string password = 2;
+}
+
+message SignIn {
+    string username = 1;
+    string password = 2;
+}
+
+message Buy {
+    message BuyInfo {
+        uint64 symbol = 1;
+        uint64 amount = 2;
+        uint64 timestamp = 3;
+    }
+}
+
+message TradeResponse {
+    string symbol = 1;
+    message TradeInfo {
+        uint64 coin_cur_price = 1;
+        uint64 amount = 2;
+        uint64 total_price = 3;
+        bool flag = 4;
+    }
+}
+
+message Sell {
+    message SellInfo {
+        uint64 amount = 1;
+        uint64 timestamp = 2;
+        uint32 symbol = 3;
+    }
+}
+
+message History {
+    message HistoryInfo {
+        uint64 type = 1;
+        uint64 timestamp = 2;
+        uint32 symbol = 3;
+    }
+}
+
+message HistoryResponse {
+    message TradeHistory {
+        uint64 id = 1;
+        uint64 price = 2;
+        uint64 amount = 3;
+        uint64 total_price = 4;
+        uint64 trade_time = 5;
+        bool type = 6;
+    }
+}
+
+message AddressBook {
+    string address = 1;
+    string memo = 2;
+    message AddressBookInfo {
+        uint64 create_at_timestamp = 1;
+        uint32 symbol = 2;
+    }
+}
+
+message AddressBookResponse {
+    string symbol = 1;
+    string address = 2;
+    string memo = 3;
+}
+
+message ModifyAddressBook {
+    string origin_addr = 1;
+    string new_addr = 2;
+    uint32 id = 3;
+}
+
+message ModifyAddressBookResponse {
+    string origin_addr = 1;
+    string new_addr = 2;
+    uint32 id = 3;
+}
+
+message Deposit {
+    string address = 1;
+    message DepositInfo {
+        uint64 memo = 1;
+        uint32 symbol = 2;
+    }
+}
+
+message EventHandler {
+    uint64 signup = 1;
+    uint64 signin = 2;
+    uint64 deposit = 3;
+    uint64 buy = 4;
+    uint64 eventSell = 5;
+    uint64 history = 6;
+    uint64 addressbook = 7;
+    uint64 modifyAddressbook = 8;
+    uint32 event_id = 9;
+}
+
+message ProtossInterface {
+    EventHandler event_handlers = 1;
+}
