@@ -1,0 +1,7 @@
+version: '3'
+services:
+  protoss:
+   build:
+     context: .
+     dockerfile: Dockerfile
+   working_dir: /root/protoss
