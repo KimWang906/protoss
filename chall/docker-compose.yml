@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0@sha256:fd8f47c32de2993a704627bffca9b64495c156ec6e85e0af4074cf908830a794
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=protoss
+      - MYSQL_USER=protoss
+      - MYSQL_PASSWORD=protoss
+      - MYSQL_DATABASE=protoss_db
+    networks:
+      - protossnet
+    ports:
+     - "3306:3306"
+    container_name: db
+  protoss:
+    build: .
+    restart: always
+    ports:
+      - "5050:5050"
+    environment:
+      - LD_LIBRARY_PATH=/home/user/libs
+    networks:
+      - protossnet
+    depends_on:
+      - db
+    container_name: protoss
+  
+networks:
+  protossnet:
