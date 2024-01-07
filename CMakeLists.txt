@@ -4,6 +4,7 @@ project(protobuf-example)
 
 set(CMAKE_CXX_STANDARD 17) 
 set(CMAKE_CXX_STANDARD_REQUIRED on)
+set(LDFLAGS "-Wl,--copy-dt-needed-entries")
 
 include(FindProtobuf)
 find_package(Protobuf CONFIG REQUIRED)
@@ -23,10 +24,6 @@ add_executable(main main.cpp)
 target_link_libraries(
   main 
   ${LDFLAGS}
-  absl_log_internal_check_op
-  absl_log_internal_message
-  absl_raw_logging_internal
-  absl_spinlock_wait
   proto
   ${PROTOBUF_LIBRARY} 
   )

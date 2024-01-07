@@ -3,6 +3,8 @@ syntax = "proto2";
 // Reverse Engineering
 // proto ver: 2
 
+// Version: 1
+
 package protoss;
 
 message SignUp {

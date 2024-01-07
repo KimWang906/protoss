@@ -1,41 +1,31 @@
 #include <iostream>
-#include "protoss.pb.h"
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include "protoss_3.pb.h"
 #include <fcntl.h>
-
 using namespace std;
+
+#define PORT 5050
+#define USER_HANDLER 16 >> 24
+#define EXCHANGE_HANDLER 32 >> 24
 
 int main()
 {
-    setvbuf(stdout, 0, 2, 0);
-    setvbuf(stdout, 0, 2, 0);
     protoss::ProtossInterface *pi_obj = new protoss::ProtossInterface();
-    char *data = new char[0x2800];
-    int len;
-    memset(data, 0, 0x2800);
+    protoss::SignUp *user_signup = new protoss::SignUp();
+    user_signup->set_username("HyunBin");
+    user_signup->set_password("12345678");
 
-    cout << "> ";
-    len = read(0, data, 0x2800);
+    pi_obj->set_event_id(USER_HANDLER);
+    pi_obj->set_allocated_event_signup(user_signup);
 
-    if (pi_obj->ParseFromArray(data, len) != 1)
-    {
-        cout << "ERROR" << endl;
-        cout << "data: " << data << endl;
-        cout << "len: " << len << endl;
-    };
+    cout << "Set Event ID: " << pi_obj->event_id() << endl;
+    cout << "Set Event SignUp\nUsername: " << pi_obj->event_signup().username() << endl;
+    cout << "Passowrd: " << pi_obj->event_signup().password() << endl;
 
-    cout << pi_obj->event_id() << endl;
-    if (pi_obj->has_event_signup())
-    {
-        protoss::SignUp signup = pi_obj->event_signup();
-        cout << signup.username() << endl;
-        cout << signup.password() << endl;
-    }
-    else if (pi_obj->has_event_signin())
-    {
-        protoss::SignIn signin = pi_obj->event_signin();
-        cout << signin.username() << endl;
-        cout << signin.password() << endl;
-    }
+
+    pi_obj->has_event_addressbook();
+    pi_obj->has_event_buy();
 
     return 0;
 }
