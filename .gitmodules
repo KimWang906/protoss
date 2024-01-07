@@ -1,0 +1,3 @@
+[submodule "protobuf_metadata_extrator"]
+	path = Protod3
+	url = https://github.com/giuinktse7/Protod3.git
