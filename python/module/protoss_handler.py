@@ -1,14 +1,14 @@
-from build.protoss_pb2 import ProtossInterface, SignUp, SignIn
-# import module.protoss_log
-# import module.custom_macros
 import json
 import base64
+from module.memory import *
 from pwn import *
 from pwnlib.timeout import *
+from build.protoss_pb2 import ProtossInterface, SignUp, SignIn
 
 USER_HANDLER = 16 << 24
 EXCHANGE_HANDLER = 32 << 24
 MEMORY_MAP_LINES = 24
+
 
 def prompt(r: tube):
     while (1):
@@ -86,17 +86,21 @@ def user_signin(r: tube, interface: ProtossInterface,
     req = interface.SerializeToString()
     # module.protoss_log.logging_request('Sign-In_Account', req)
     r.send(req)
-    t = Timeout()
-    with t.local(3):
-        result = r.recvall()
+    data = r.recvrepeat(1)
+    if data.decode() != '> ':
+        for memory_map in sigsegv_parse(data):
+            print(memory_map)
+    else:
+        print(f'{data.decode()}')
 
-    if result.decode() != '> ':
-        result = sigsegv_handler_parse(r)
-    print(f'Received Data: {result}')
 
-def sigsegv_handler_parse(r: tube):
-    pass
-
+def sigsegv_parse(data: bytes) -> list[VirtualMemoryLayout]:
+    result = []
+    for line in data.replace(b'\x00', b'')[2:].split(b'\n'):
+        if line == b'':
+            continue
+        result.append(VirtualMemoryLayout(line))
+    return result
 
 def user_handler(r: tube, user_input: str, interface: ProtossInterface):
     mode = USER_HANDLER

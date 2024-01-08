@@ -4,8 +4,7 @@ from pwn import *
 
 r = remote("0.0.0.0", 5050)
 # r = remote("host3.dreamhack.games", 20391)
-context.timeout = '5'
-context.log_level = 'debug'
+# context.log_level = 'debug'
 
 # Execute prompt
 module.protoss_handler.prompt(r)
