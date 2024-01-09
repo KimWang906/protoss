@@ -39,6 +39,6 @@ RUN chown user:root /home/user/*
 
 WORKDIR /home/user
 
-COPY protossinterface .
+COPY signin .
 
 CMD socat TCP-LISTEN:5050,reuseaddr,fork EXEC:"./protoss"

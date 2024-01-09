@@ -50,3 +50,51 @@ SIGSEGV 발생 --> 1 -> 2 -> HyunBin / 12345678로 회원가입 -> 1 -> 3 -> Hyu
 확인 결과 login_count가 set되지 않았을 때, SIGSEGV를 발생시킬 수 있음.
 --> 최초 로그인 시 비밀번호를 의도적으로 틀리게 하여 발생시킬 수 있다.
 --> 만약 로그인에 성공했을 경우, 이후 로그인은 다중 로그인 시도로 감지되어 실패함.
+
+## 1. SIGSEGV Trigger
+
+### Date: 2024/01/08
+
+* 이 트리거는 `User::handle_signin(User *this, const protoss::SignIn *request)` 기능에서 발생한다.
+
+### 발생 위치
+
+```cpp
+__int64 __fastcall MySQLClient::exec_query_result(MySQLClient *conn, char *sqlQuery)
+{
+  __int64 exec_query; // rax
+
+  if ( std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>::empty(sqlQuery) )
+    exit(-1);
+  exec_query = std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>::c_str(sqlQuery);
+  mysql_query(conn, exec_query);
+  return mysql_store_result();                  // Get all result
+}
+
+User::handle_signin(User *this, const protoss::SignIn *request) {
+    /* ... */
+      exec_result = MySQLClient::exec_query_result(conn, (char *)data);
+      std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>::~basic_string((__int64)data);
+      if ( exec_result ) /* <-------------- */
+      {
+        if ( mysql_num_fields(exec_result) == 3 )
+        {
+          row = mysql_fetch_row(exec_result);
+          this->id = atoi(*row);
+          std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>::operator=(
+            this->username,
+            row[1]);
+          this->amount = atoi(row[3]);
+          this->is_login = 1;
+          status_code = 0;
+        }
+      } /* ... */
+}
+```
+
+위 코드에서 SIGSEGV가 발생하는 위치는 `if ( exec_result )`이다.  
+발생 원인은 `exec_query_result` 함수 내에서 `mysql_query()`를 사용하게 되는데 해당 ...  
+
+## Debugging
+
+우선 프로그램 내에 system 함수가 있기에 디버깅 모드를 `set follow-fork-mode parent`로 설정하여 부모 프로세스 중심으로 디버깅이 되도록 설정한다.  

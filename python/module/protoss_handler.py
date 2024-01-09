@@ -1,13 +1,13 @@
 import json
 import base64
 from module.memory import *
+from module.protoss_log import *
 from pwn import *
 from pwnlib.timeout import *
 from build.protoss_pb2 import ProtossInterface, SignUp, SignIn
 
 USER_HANDLER = 16 << 24
 EXCHANGE_HANDLER = 32 << 24
-MEMORY_MAP_LINES = 24
 
 
 def prompt(r: tube):
@@ -15,8 +15,7 @@ def prompt(r: tube):
         print("Hiring CTF ProtossInterface")
         print("1. Call User Handler")
         print("2. Call Exchange Handler")
-        print("3. Call Custom Macro")
-        print("4. Exit")
+        print("3. Exit")
         user_input = input("Input: ")
         if user_input == "1":
             print("Select User Option")
@@ -29,8 +28,6 @@ def prompt(r: tube):
         elif user_input == "2":
             print("Select Exchange Handler")
         elif user_input == "3":
-            pass
-        elif user_input == "4":
             print("Exit ProtossInterface ...")
             exit(0)
         else:
@@ -84,7 +81,8 @@ def user_signin(r: tube, interface: ProtossInterface,
     interface.event_signin.username = signin.username
     interface.event_signin.password = signin.password
     req = interface.SerializeToString()
-    # module.protoss_log.logging_request('Sign-In_Account', req)
+    with open("signin", "wb") as f:
+        f.write(bytes(req))
     r.send(req)
     data = r.recvrepeat(1)
     if data.decode() != '> ':
@@ -101,6 +99,9 @@ def sigsegv_parse(data: bytes) -> list[VirtualMemoryLayout]:
             continue
         result.append(VirtualMemoryLayout(line))
     return result
+
+def user_signout():
+    pass
 
 def user_handler(r: tube, user_input: str, interface: ProtossInterface):
     mode = USER_HANDLER
