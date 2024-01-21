@@ -53,7 +53,7 @@ SIGSEGV 발생 --> 1 -> 2 -> HyunBin / 12345678로 회원가입 -> 1 -> 3 -> Hyu
 
 ## 1. SIGSEGV Trigger
 
-### Date: 2024/01/08
+### Date: 2024/01/08 ~ 2024/01/12
 
 * 이 트리거는 `User::handle_signin(User *this, const protoss::SignIn *request)` 기능에서 발생한다.
 
@@ -92,8 +92,11 @@ User::handle_signin(User *this, const protoss::SignIn *request) {
 }
 ```
 
-위 코드에서 SIGSEGV가 발생하는 위치는 `if ( exec_result )`이다.  
-발생 원인은 `exec_query_result` 함수 내에서 `mysql_query()`를 사용하게 되는데 해당 ...  
+위 코드에서 **SIGSEGV**가 발생하는 위치는 `if ( exec_result )` 이후이다.(집 가서 자세히 씁시다)  
+발생 원인은 `exec_query_result` 함수 내에서 `mysql_query()`를 사용하게 되는데 해당 함수의 결과가 없음에도 `0(Success)`을 반환한다.  
+그렇기에 `mysql_store_result()` 함수도 `mysql_query()`의 결과로 인해 NULL 포인터를 반환하게 되고, NULL 포인터에 접근하는 코드에서 **SIGSEGV**가 발생하였다.  
+
+
 
 ## Debugging
 

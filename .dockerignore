@@ -2,3 +2,5 @@
 build/
 Dockerfile
 docker-compose.yml
+__pycache__
+docker/python/Makefile

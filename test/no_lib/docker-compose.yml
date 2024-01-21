@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  poc_no_lib_db:
+    image: mysql:8.0@sha256:fd8f47c32de2993a704627bffca9b64495c156ec6e85e0af4074cf908830a794
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=poc
+      - MYSQL_USER=poc
+      - MYSQL_PASSWORD=poc
+      - MYSQL_DATABASE=poc_db
+    networks:
+      - pocnet
+    ports:
+      - "3308:3306"
+    container_name: poc_no_lib_db
+  poc_no_lib:
+    build: .
+    networks:
+      - pocnet
+    depends_on:
+      - poc_no_lib_db
+    container_name: poc_no_lib
+
+networks:
+  pocnet:
