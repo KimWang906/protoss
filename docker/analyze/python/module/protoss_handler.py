@@ -4,7 +4,7 @@ from module.memory import *
 from module.protoss_log import *
 from pwn import *
 from pwnlib.timeout import *
-from build.protoss_pb2 import ProtossInterface, SignUp, SignIn, Buy
+from build.protoss_pb2 import ProtossInterface, SignUp, SignIn, Buy, Sell
 
 USER_HANDLER = 16 << 24
 EXCHANGE_HANDLER = 32 << 24
@@ -160,8 +160,21 @@ def buy(r: tube, interface: ProtossInterface, mode: int, buy: Buy = None):
     r.send(req)
     print(r.recvrepeat(1).decode())
 
+def sell(r: tube, interface: ProtossInterface, mode: int, sell: Sell = None):
+    if sell == None:
+        sell = Sell()
+        sell.symbol = int(input("Input symbol: "), 10)
+        sell.amount = int(input("Input Amount: "), 10)
+    interface.event_id = mode
+    interface.event_sell.symbol = sell.symbol
+    interface.event_sell.amount = sell.amount
+    req = interface.SerializeToString()
+    r.send(req)
+    print(r.recvrepeat(1).decode())
 
 def exchange_handler(r: tube, user_input: str, interface: ProtossInterface):
     mode = EXCHANGE_HANDLER
     if user_input == "1":
         buy(r, interface, mode)
+    elif user_input == "2":
+        sell(r, interface, mode)
