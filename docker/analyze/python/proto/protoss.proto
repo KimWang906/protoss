@@ -1,0 +1,106 @@
+package protoss;
+
+// Version: 2
+
+enum Symbol {
+  BTC = 0;
+  ETH = 1;
+  XRP = 2;
+  ELF = 3;
+}
+
+message SignUp {
+  required string username = 1;
+  required string password = 2;
+}
+
+message SignUpResponse {
+  required string username = 1;
+  required uint64 acc_id = 3;
+}
+
+message SignIn {
+  required string username = 1;
+  required string password = 2;
+}
+
+message Deposit {
+  required string address = 1;
+  required Symbol symbol = 2;
+  optional int64 memo = 3;
+}
+
+message Buy {
+  required int64 symbol = 1;
+  required uint64 amount = 2;
+  optional uint64 timestamp = 3;
+}
+
+message Sell {
+  required Symbol symbol = 1;
+  required uint64 amount = 2;
+  optional uint64 timestamp = 3;
+}
+
+message TradeResponse {
+  required string symbol = 1;
+  required uint64 coin_cur_price = 2;
+  required uint64 amount = 3;
+  required uint64 total_price = 4;
+  required bool flag = 5;
+}
+
+message History {
+  required Symbol symbol = 1;
+  required uint64 type = 2;
+  optional uint64 ts = 3;
+}
+
+message HistoryResponse {
+  required uint64 id = 1;
+  required string symbol = 2;
+  required uint64 price = 3;
+  required uint64 amount = 4;
+  required uint64 total_price = 5;
+  required bool type = 6;
+  optional uint64 trade_time = 7;
+}
+
+message AddressBook {
+  required Symbol symbol = 1;
+  required string address = 2;
+  optional string memo = 3;
+  optional uint64 create_at_ts = 4;
+}
+
+message ModifyAddressBook {
+  required int32 _id = 1;
+  optional string origin_addr = 3;
+  required string new_addr = 4;
+  optional string memo = 5;
+}
+
+message AddressBookResponse {
+  required string symbol = 1;
+  required string address = 2;
+  optional string memo = 3;
+}
+
+message ModifyAddressBookResponse {
+  required uint32 id = 1;
+  required string origin_addr = 2;
+  required string new_addr = 3;
+}
+
+message ProtossInterface {
+  required int32 event_id = 1;
+  optional SignUp event_signup = 2;
+  optional SignIn event_signin = 3;
+  optional Deposit event_deposit = 4;
+  optional Buy event_buy = 5;
+  optional Sell event_sell = 6;
+  optional History event_history = 7;
+  optional AddressBook event_addressbook = 8;
+  optional ModifyAddressBook event_modify_addressbook = 9;
+}
+

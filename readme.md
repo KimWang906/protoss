@@ -96,8 +96,17 @@ User::handle_signin(User *this, const protoss::SignIn *request) {
 발생 원인은 `exec_query_result` 함수 내에서 `mysql_query()`를 사용하게 되는데 해당 함수의 결과가 없음에도 `0(Success)`을 반환한다.  
 그렇기에 `mysql_store_result()` 함수도 `mysql_query()`의 결과로 인해 NULL 포인터를 반환하게 되고, NULL 포인터에 접근하는 코드에서 **SIGSEGV**가 발생하였다.  
 
-
-
 ## Debugging
 
 우선 프로그램 내에 system 함수가 있기에 디버깅 모드를 `set follow-fork-mode parent`로 설정하여 부모 프로세스 중심으로 디버깅이 되도록 설정한다.  
+
+## Program flow
+
+이 프로그램은 코인 거래 관련 프로그램이다.  
+기본적으로 protobuf를 통해 데이터를 서버에 전달할 수 있다.  
+  
+각 기능들의 결과는 다음과 같다:  
+
+* 기본적으로 회원가입 시, `acc_id`는 순차적으로 발급되고 `krw_amount = 100000000;`의 돈을 지급받는다.
+
+* 로그인 시, User 객체에 

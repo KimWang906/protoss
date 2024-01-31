@@ -59,7 +59,8 @@ def custom_payload():
                 set_signup('HyunBin', '1234'))
     user_signin(p, ProtossInterface(), USER_HANDLER,
                 set_signin('HyunBin', '1234'))
-    sell(p, ProtossInterface(), EXCHANGE_HANDLER, set_sell(0, 10))
+    # sell(p, ProtossInterface(), EXCHANGE_HANDLER, set_sell(0, 10))
+    buy(p, ProtossInterface(), EXCHANGE_HANDLER, set_buy(0, 1))
 
     print('Done.')
     print('Executing Protoss Handler Prompt')

@@ -1,0 +1,101 @@
+syntax = "proto2";
+
+// Reverse Engineering
+// proto ver: 2
+
+// Version: 1
+
+package protoss;
+
+message SignUp {
+    required string username = 1;
+    required string password = 2;
+}
+
+message SignUpResponse {
+    required string username = 1;
+    required string password = 2;
+}
+
+message SignIn {
+    required string username = 1;
+    required string password = 2;
+}
+
+message Buy {
+    required uint64 symbol = 1;
+    required uint64 amount = 2;
+    optional uint64 timestamp = 3;
+}
+
+message TradeResponse {
+    required string symbol = 1;
+    required uint64 coin_cur_price = 2;
+    required uint64 amount = 3;
+    required uint64 total_price = 4;
+    required bool flag = 5;
+}
+
+message Sell {
+    required uint64 amount = 1;
+    optional uint64 timestamp = 2;
+    required uint32 symbol = 3;
+}
+
+message History {
+    required uint64 type = 1;
+    optional uint64 timestamp = 2;
+    required uint32 symbol = 3;
+}
+
+message HistoryResponse {
+    required uint64 id = 1;
+    required uint64 price = 2;
+    required uint64 amount = 3;
+    required uint64 total_price = 4;
+    required uint64 trade_time = 5;
+    required bool type = 6;
+}
+
+message AddressBook {
+    required string address = 1;
+    optional string memo = 2;
+    optional uint64 create_at_timestamp = 3;
+    required uint32 symbol = 4;
+}
+
+message AddressBookResponse {
+    required string symbol = 1;
+    required string address = 2;
+    optional string memo = 3;
+}
+
+message ModifyAddressBook {
+    required string origin_addr = 1;
+    required string new_addr = 2;
+    required uint32 id = 3;
+}
+
+message ModifyAddressBookResponse {
+    required string origin_addr = 1;
+    required string new_addr = 2;
+    required uint32 id = 3;
+}
+
+message Deposit {
+    required string address = 1;
+    optional uint64 memo = 2;
+    required uint32 symbol = 3;
+}
+
+message ProtossInterface {
+    optional SignUp event_signup = 1;
+    optional SignIn event_signin = 2;
+    optional Deposit event_deposit = 3;
+    optional Buy event_buy = 4;
+    optional Sell event_sell = 5;
+    optional History event_history = 6;
+    optional AddressBook event_addressbook = 7;
+    optional ModifyAddressBook event_modify_addressbook = 8;
+    required uint32 event_id = 9;
+}

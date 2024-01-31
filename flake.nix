@@ -20,11 +20,11 @@
             checksec
             ropgadget
             one_gadget
+            protobuf_25
           ];
 
           shellHook = ''
             cp config/.tmux.conf $HOME
-            tmux
             alias gdb="pwndbg"
           '';
         };
