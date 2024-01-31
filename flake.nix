@@ -12,7 +12,7 @@
   in
   {
     devShells.${system}.default = 
-      pkgs.mkShell.override { stdenv = pkgs.multiStdenv; } {
+      pkgs.mkShell {
           buildInputs = with pkgs; [
             pwndbg
             tmux
