@@ -1,3 +1,6 @@
 [submodule "protobuf_metadata_extrator"]
 	path = Protod3
 	url = https://github.com/giuinktse7/Protod3.git
+[submodule "ida"]
+	path = ida
+	url = https://github.com/KimWang906/protoss_ida.git
