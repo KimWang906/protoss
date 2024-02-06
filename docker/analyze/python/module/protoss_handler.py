@@ -2,10 +2,13 @@ import json
 import base64
 from datetime import *
 from module.memory import *
+from numpy import *
 from module.protoss_log import *
 from pwn import *
 from pwnlib.timeout import *
-from build.protoss_pb2 import ProtossInterface, SignUp, SignIn, Buy, Sell
+from build.protoss_pb2 import ProtossInterface, \
+    SignUp, SignIn, Buy, Sell, History, AddressBook, \
+    ModifyAddressBook, Deposit
 
 USER_HANDLER = 16 << 24
 EXCHANGE_HANDLER = 32 << 24
@@ -49,7 +52,7 @@ def show_user_info(r: tube, interface: ProtossInterface, mode: int):
     interface.event_id = mode + 3
     req = interface.SerializeToString()
     # module.protoss_log.logging_request('Show_My_Information', req)
-    r.send(req)
+    r.sendafter(b'> ', req)
     data = r.recvrepeat(1)
     print('============================')
     print(data.decode().replace('\n>', ''))
@@ -69,24 +72,23 @@ def user_signup(r: tube, interface: ProtossInterface,
     # with open("signup", "wb") as f:
     #     f.write(bytes(req))
     # module.protoss_log.logging_request('Sign-Up_Account', req)
-    r.send(req)
+    r.sendafter(b'> ', req)
     # try catch ...
     sign_up_response(r)
 
 
 def sign_up_response(r: tube):
-    try:
-        r.recvuntil(b'\n')
-        raw_data = r.recvuntil(b'> ')[:-3]
-        json_res = json.loads(raw_data)
-        raw_username = base64.b64decode(json_res['username'])
-        username = raw_username.decode('UTF-8')
-        print('============================')
-        print('username: {}'.format(username))
-        print('acc_id: {}'.format(json_res['acc_id']))
-        print('============================')
-    except:
-        print("Failed Response Data. Received: {}".format(r.recvrepeat(3)))
+    r.recvuntil(b'\n')
+    raw_data = b''
+    for _ in range(4):
+        raw_data += r.recvuntil(b'\n')
+    json_res = json.loads(raw_data)
+    raw_username = base64.b64decode(json_res['username'])
+    username = raw_username.decode('UTF-8')
+    print('============================')
+    print('username: {}'.format(username))
+    print('acc_id: {}'.format(json_res['acc_id']))
+    print('============================')
 
 
 def user_signin(r: tube, interface: ProtossInterface,
@@ -101,7 +103,7 @@ def user_signin(r: tube, interface: ProtossInterface,
     req = interface.SerializeToString()
     # with open("signin", "wb") as f:
     #     f.write(bytes(req))
-    r.send(req)
+    r.sendafter(b'> ', req)
     data = r.recvrepeat(1)
     if data.decode() != '> ':
         for memory_map in sigsegv_parse(data):
@@ -122,7 +124,7 @@ def sigsegv_parse(data: bytes) -> list[VirtualMemoryLayout]:
 def user_signout(r: tube, interface: ProtossInterface, mode: int):
     interface.event_id = mode + 2
     req = interface.SerializeToString()
-    r.send(req)
+    r.sendafter(b'> ', req)
     r.recvrepeat(1)
 
 # def custom_macros(r: tube):
@@ -151,13 +153,13 @@ def buy(r: tube, interface: ProtossInterface, mode: int, buy: Buy = None):
         buy.symbol = int(input("Input symbol: "), 10)
         buy.amount = int(input("Input Amount: "), 10)
         # buy.timestamp = todo
-    interface.event_id = mode + 1
+    interface.event_id = mode
     interface.event_buy.symbol = buy.symbol
     interface.event_buy.amount = buy.amount
     req = interface.SerializeToString()
     # with open("buy", "wb") as f:
     #     f.write(bytes(req))
-    r.send(req)
+    r.sendafter(b'> ', req)
     print(r.recvrepeat(1).decode())
 
 
@@ -170,9 +172,103 @@ def sell(r: tube, interface: ProtossInterface, mode: int, sell: Sell = None):
     interface.event_sell.symbol = sell.symbol
     interface.event_sell.amount = sell.amount
     req = interface.SerializeToString()
-    r.send(req)
+    r.sendafter(b'> ', req)
     print(r.recvrepeat(1).decode())
 
+def view_history(
+    r: tube,
+    interface: ProtossInterface,
+    mode: int,
+    history: History = None):
+    if history == None:
+        history = History()
+        history.symbol = int(input("Input symbol: "), 10)
+        history.type = int(input("Input type: "), 10)
+    interface.event_id = mode + 2
+    interface.event_history.symbol = history.symbol
+    interface.event_history.type = history.type
+    req = interface.SerializeToString()
+    r.sendafter(b'> ', req)
+    data = r.recvrepeat(1)
+    if data.decode() != '> ':
+        for memory_map in sigsegv_parse(data):
+            print(memory_map)
+    else:
+        print(f'{data.decode()}')
+
+def add_addrbook(
+    r: tube,
+    interface:ProtossInterface,
+    mode: int,
+    addrbook: AddressBook = None):
+    if addrbook == None:
+        addrbook = AddressBook()
+        addrbook.symbol = int(input("Input symbol: "), 10)
+        addrbook.address = input("Input address: ")
+        addrbook.memo = input("Input memo: ")
+    interface.event_id = mode + 3
+    interface.event_addressbook.symbol = addrbook.symbol
+    interface.event_addressbook.address = addrbook.address
+    interface.event_addressbook.memo = addrbook.memo
+    req = interface.SerializeToString()
+    r.sendafter(b'> ', req)
+    print(r.recvrepeat(1).decode())
+
+def modify_addrbook(
+    r: tube,
+    interface: ProtossInterface,
+    mode: int,
+    mod_addrbook: ModifyAddressBook = None):
+    if mod_addrbook == None:
+        mod_addrbook = ModifyAddressBook()
+        mod_addrbook._id = int(input("Input _id: "), 10)
+        mod_addrbook.origin_addr = input("Input origin address: ")
+        mod_addrbook.new_addr = input("Input new address: ")
+        mod_addrbook.memo = input("Input memo: ")
+    interface.event_id = mode + 4
+    interface.event_modify_addressbook._id = mod_addrbook._id
+    interface.event_modify_addressbook.origin_addr = mod_addrbook.origin_addr
+    interface.event_modify_addressbook.new_addr = mod_addrbook.new_addr
+    interface.event_modify_addressbook.memo = mod_addrbook.memo
+    req = interface.SerializeToString()
+    r.sendafter(b'> ', req)
+    print(r.recvrepeat(1).decode())
+
+def del_addrbook(
+    r: tube,
+    interface: ProtossInterface,
+    mode: int,
+    addrbook: AddressBook = None):
+    if addrbook == None:
+        addrbook = AddressBook()
+        addrbook.symbol = int(input("Input symbol: "), 10)
+        addrbook.address = input("Input address: ")
+        addrbook.memo = input("Input memo: ")
+    interface.event_id = mode + 5
+    interface.event_addressbook.symbol = addrbook.symbol
+    interface.event_addressbook.address = addrbook.address
+    interface.event_addressbook.memo = addrbook.memo
+    req = interface.SerializeToString()
+    r.sendafter(b'> ', req)
+    print(r.recvrepeat(1).decode())
+
+def deposit(
+    r: tube,
+    interface: ProtossInterface,
+    mode: int,
+    deposit: Deposit = None):
+    if deposit == None:
+        deposit = Deposit()
+        deposit.address = input("Input address: ")
+        deposit.symbol = int(input("Input symbol: "), 10)
+        deposit.memo = int(input("Input memo: "))
+    interface.event_id = mode + 6
+    interface.event_deposit.address = deposit.address
+    interface.event_deposit.symbol = deposit.symbol
+    interface.event_deposit.memo = deposit.memo
+    req = interface.SerializeToString()
+    r.sendafter(b'> ', req)
+    print(r.recvrepeat(1).decode())
 
 def exchange_handler(r: tube, user_input: str, interface: ProtossInterface):
     mode = EXCHANGE_HANDLER
@@ -180,7 +276,16 @@ def exchange_handler(r: tube, user_input: str, interface: ProtossInterface):
         buy(r, interface, mode)
     elif user_input == "2":
         sell(r, interface, mode)
-
+    elif user_input == "3":
+        view_history(r, interface, mode)
+    elif user_input == "4":
+        add_addrbook(r, interface, mode)
+    elif user_input == "5":
+        modify_addrbook(r, interface, mode)
+    elif user_input == "6":
+        del_addrbook(r, interface, mode)
+    elif user_input == "7":
+        deposit(r, interface, mode)
 
 def set_signup(username: str, password: str) -> SignUp:
     user = SignUp()
@@ -196,8 +301,12 @@ def set_signin(username: str, password: str) -> SignIn:
     return user
 
 
-def set_sell(symbol: int, amount: int,
-             timestamp: int = int(datetime.datetime.now().timestamp())) -> Sell:
+def set_sell(
+    symbol: uint,
+    amount: uint,
+    timestamp: uint64 = uint64(
+        datetime.datetime.now().timestamp())
+    ) -> Sell:
     sell = Sell()
     sell.symbol = symbol
     sell.amount = amount
@@ -205,10 +314,64 @@ def set_sell(symbol: int, amount: int,
     return sell
 
 
-def set_buy(symbol: int, amount: int,
-            timestamp: int = int(datetime.datetime.now().timestamp())) -> Buy:
+def set_buy(
+    symbol: uint,
+    amount: uint,
+    timestamp:  uint64 = uint64(
+        datetime.datetime.now().timestamp())
+    ) -> Buy:
     buy = Buy()
     buy.symbol = symbol
     buy.amount = amount
     buy.timestamp = timestamp
     return buy
+
+def set_history(
+    symbol: uint,
+    type: uint8,
+    timestamp: uint64 = uint64(
+        datetime.datetime.now().timestamp())
+    ) -> History:
+    history = History()
+    history.symbol = symbol
+    history.type = type
+    history.ts = timestamp
+    return history
+
+def set_addressbook(
+    symbol: uint,
+    address: str,
+    memo: str,
+    create_at_timestamp: uint64 = uint64(
+        datetime.datetime.now().timestamp())
+    ) -> AddressBook:
+    addrbook = AddressBook()
+    addrbook.symbol = symbol
+    addrbook.address = address
+    addrbook.memo = memo
+    addrbook.create_at_ts = create_at_timestamp
+    return addrbook
+
+def set_modify_addressbook(
+    id: int, 
+    origin_addr: str,
+    new_addr: str,
+    memo: str
+    ) -> ModifyAddressBook:
+    mod_addrbook = ModifyAddressBook()
+    mod_addrbook._id = id
+    mod_addrbook.origin_addr = origin_addr
+    mod_addrbook.new_addr = new_addr
+    mod_addrbook.memo = memo
+    return mod_addrbook
+
+def set_deposit(
+    addr: str,
+    symbol: uint,
+    memo: int64
+    ) -> Deposit:
+    deposit = Deposit()
+    deposit.address = addr
+    deposit.symbol = symbol
+    deposit.memo = memo
+    return deposit

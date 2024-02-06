@@ -45,6 +45,10 @@ bool __fastcall protoss::Sell::_Internal::MissingRequiredFields(_DWORD *a1)
 
 ## Find Vulnability
 
+## 관련 CVE
+
+[CVE-2024-20965](https://security.snyk.io/vuln/SNYK-UNMANAGED-MYSQLMYSQLSERVER-6170062)
+
 SIGSEGV 발생 --> 1 -> 2 -> HyunBin / 12345678로 회원가입 -> 1 -> 3 -> HyunBin / 12 --> SIGSEGV
 
 확인 결과 login_count가 set되지 않았을 때, SIGSEGV를 발생시킬 수 있음.
@@ -96,6 +100,10 @@ User::handle_signin(User *this, const protoss::SignIn *request) {
 발생 원인은 `exec_query_result` 함수 내에서 `mysql_query()`를 사용하게 되는데 해당 함수의 결과가 없음에도 `0(Success)`을 반환한다.  
 그렇기에 `mysql_store_result()` 함수도 `mysql_query()`의 결과로 인해 NULL 포인터를 반환하게 되고, NULL 포인터에 접근하는 코드에서 **SIGSEGV**가 발생하였다.  
 
+* History
+
+SIGSEGV는 무조건 발생함. 분석할 필요가 있음.
+
 ## Debugging
 
 우선 프로그램 내에 system 함수가 있기에 디버깅 모드를 `set follow-fork-mode parent`로 설정하여 부모 프로세스 중심으로 디버깅이 되도록 설정한다.  
@@ -109,4 +117,4 @@ User::handle_signin(User *this, const protoss::SignIn *request) {
 
 * 기본적으로 회원가입 시, `acc_id`는 순차적으로 발급되고 `krw_amount = 100000000;`의 돈을 지급받는다.
 
-* 로그인 시, User 객체에 
+* 로그인 시, User 객체에 기본적인 정보를 담는다.

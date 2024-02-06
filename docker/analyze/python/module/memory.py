@@ -29,13 +29,17 @@ class Device:
 
 class VirtualMemoryLayout:
     def __init__(self, raw_data: bytes):
-        data = self.__parse_raw_data(raw_data)
-        self.__set_addr(data[0])
-        self.__set_permission(data[1])
-        self.__set_offset(data[2])
-        self.__set_dev(data[3])
-        self.__set_inode(data[4])
-        self.__set_pathname(data[5])
+        try:
+            data = self.__parse_raw_data(raw_data)
+            self.__set_addr(data[0])
+            self.__set_permission(data[1])
+            self.__set_offset(data[2])
+            self.__set_dev(data[3])
+            self.__set_inode(data[4])
+            self.__set_pathname(data[5])
+        except ValueError:
+            print("RAW_DATA: {}".format(raw_data.decode()))
+            exit(-1)
 
     def __str__(self) -> str:
         return f"""===========================MemoryMap===========================

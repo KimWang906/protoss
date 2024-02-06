@@ -2,7 +2,7 @@ from module.protoss_handler import *
 from pwn import *
 from pwn import p64
 from build.protoss_pb2 import ProtossInterface, SignUp, SignIn, Buy, Sell
-
+from module.custom import *
 
 def slog(n, m): return success(': '.join([n, hex(m)]))
 
@@ -23,15 +23,20 @@ breakpoint = {
     'call_handle_add_addressbook': '_Z16exchange_handlerPN7protoss16ProtossInterfaceE+654',
     'call_handle_modify_addressbook': '_Z16exchange_handlerPN7protoss16ProtossInterfaceE+750',
     'call_handle_del_addressbook': '_Z16exchange_handlerPN7protoss16ProtossInterfaceE+840',
+    'signal_handler': '_Z7handleri',
+    'SIGSEGV_view_history': '_ZN8Exchange19handle_view_historyERKN7protoss7HistoryE+458',
+    'SIGSEGV_singin': '_ZN4User13handle_signinERKN7protoss6SignInE+649',
 }
 
 gdbscript = ''
+
+gdbscript += 'handle SIGSEGV pass\n'
 
 for bp in breakpoint.values():
     fmt = 'b *{}\n'.format(bp)
     gdbscript += fmt
 
-gdbscript += 'c\n'
+# gdbscript += 'c\n'
 
 context.terminal = [
     'tmux',
@@ -54,18 +59,6 @@ else:
 # Write exploit code!
 
 
-def custom_payload():
-    user_signup(p, ProtossInterface(), USER_HANDLER,
-                set_signup('HyunBin', '1234'))
-    user_signin(p, ProtossInterface(), USER_HANDLER,
-                set_signin('HyunBin', '1234'))
-    # sell(p, ProtossInterface(), EXCHANGE_HANDLER, set_sell(0, 10))
-    buy(p, ProtossInterface(), EXCHANGE_HANDLER, set_buy(0, 1))
-
-    print('Done.')
-    print('Executing Protoss Handler Prompt')
-    prompt(p)
-
 select = input('Run prompt mode? [Y/N]: ').lower()
 if select == 'y':
     print('Run Protoss Handler prompt..')
@@ -73,7 +66,7 @@ if select == 'y':
     prompt(p)
 elif select == 'n':
     print('Run Custom Code')
-    custom_payload()
+    custom_payload(p)
 else:
     print('Wrong Input.')
 
