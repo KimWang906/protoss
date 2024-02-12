@@ -26,6 +26,7 @@ breakpoint = {
     'signal_handler': '_Z7handleri',
     'SIGSEGV_view_history': '_ZN8Exchange19handle_view_historyERKN7protoss7HistoryE+458',
     'SIGSEGV_singin': '_ZN4User13handle_signinERKN7protoss6SignInE+649',
+    'corrupted_heap1': 'mysql_store_result+172',
 }
 
 gdbscript = ''

@@ -14,15 +14,28 @@
     devShells.${system}.default = 
       pkgs.mkShell
         {
-          buildInputs = [
-            pkgs.protobuf_25
-            pkgs.cmake
-            pkgs.zlib
+          buildInputs = with pkgs; [
+            protobuf_25
+            cmake
+            zlib
+            abseil-cpp_202308
+            pkgs.autoPatchelfHook
           ];
 
+
+
           shellHook = ''
+            echo ${pkgs.abseil-cpp_202308}
             cmake -Bout
             cmake --build out
+            patchelf \
+              --add-needed \
+              ${pkgs.abseil-cpp_202308}/lib/libabsl_log_internal_check_op.so.2308.0.0 \
+              out/build/main
+            patchelf \
+              --add-needed \
+              ${pkgs.abseil-cpp_202308}/lib/libabsl_log_internal_message.so.2308.0.0 \
+              out/build/main
           '';
         };
   };

@@ -36,6 +36,8 @@ services:
       - protossnet
     depends_on:
       - db
+    volumes:
+      - ./analyze/python:/home/user/python
     container_name: analyze
 networks:
   protossnet:

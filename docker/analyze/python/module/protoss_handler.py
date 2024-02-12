@@ -13,6 +13,14 @@ from build.protoss_pb2 import ProtossInterface, \
 USER_HANDLER = 16 << 24
 EXCHANGE_HANDLER = 32 << 24
 
+def print_raw_data(data: bytes):
+    hex_chars = [data.hex()[i:i+2] for i in range(0, len(data.hex()),  2)]
+    print('============================')
+    print('Received raw data: ')
+    for i in range(0, len(hex_chars), 8):
+        line = ' '.join(hex_chars[i:i+8])
+        print(line)
+    print('============================')
 
 def prompt(r: tube):
     while (1):
@@ -47,17 +55,21 @@ def prompt(r: tube):
         else:
             print("Wrong Input")
 
-
 def show_user_info(r: tube, interface: ProtossInterface, mode: int):
     interface.event_id = mode + 3
     req = interface.SerializeToString()
     # module.protoss_log.logging_request('Show_My_Information', req)
     r.sendafter(b'> ', req)
-    data = r.recvrepeat(1)
-    print('============================')
-    print(data.decode().replace('\n>', ''))
-    print('============================')
-
+    data = r.recv()
+    if '> ' not in data.decode():
+        for memory_map in sigsegv_parse(data):
+            print(memory_map)
+    else:
+        print_raw_data(data)
+        print('============================')
+        print(data.decode().replace('\n>', ''))
+        print('============================')
+        r.unrecv(b'> ')
 
 def user_signup(r: tube, interface: ProtossInterface,
                 mode: int, signup: SignUp = None):
@@ -75,21 +87,18 @@ def user_signup(r: tube, interface: ProtossInterface,
     r.sendafter(b'> ', req)
     # try catch ...
     sign_up_response(r)
-
+    r.unrecv(b'> ')
 
 def sign_up_response(r: tube):
     r.recvuntil(b'\n')
-    raw_data = b''
-    for _ in range(4):
-        raw_data += r.recvuntil(b'\n')
+    raw_data = r.recvuntil(b'>')[:-1]
     json_res = json.loads(raw_data)
     raw_username = base64.b64decode(json_res['username'])
     username = raw_username.decode('UTF-8')
-    print('============================')
+    print_raw_data(raw_data)
     print('username: {}'.format(username))
     print('acc_id: {}'.format(json_res['acc_id']))
     print('============================')
-
 
 def user_signin(r: tube, interface: ProtossInterface,
                 mode: int, signin: SignIn = None):
@@ -104,13 +113,8 @@ def user_signin(r: tube, interface: ProtossInterface,
     # with open("signin", "wb") as f:
     #     f.write(bytes(req))
     r.sendafter(b'> ', req)
-    data = r.recvrepeat(1)
-    if data.decode() != '> ':
-        for memory_map in sigsegv_parse(data):
-            print(memory_map)
-    else:
-        print(f'{data.decode()}')
-
+    print_raw_data(r.recv())
+    r.unrecv(b'> ')
 
 def sigsegv_parse(data: bytes) -> list[VirtualMemoryLayout]:
     result = []
@@ -125,7 +129,16 @@ def user_signout(r: tube, interface: ProtossInterface, mode: int):
     interface.event_id = mode + 2
     req = interface.SerializeToString()
     r.sendafter(b'> ', req)
-    r.recvrepeat(1)
+    data = r.recv()
+    if '> ' not in data.decode():
+        for memory_map in sigsegv_parse(data):
+            print(memory_map)
+    else:
+        print_raw_data(data)
+        print('============================')
+        print(data.decode().replace('\n>', ''))
+        print('============================')
+    r.unrecv(b'> ')
 
 # def custom_macros(r: tube):
 #     user_input = input("Select custom macros: ")
@@ -160,7 +173,7 @@ def buy(r: tube, interface: ProtossInterface, mode: int, buy: Buy = None):
     # with open("buy", "wb") as f:
     #     f.write(bytes(req))
     r.sendafter(b'> ', req)
-    print(r.recvrepeat(1).decode())
+    print(r.recv().decode())
 
 
 def sell(r: tube, interface: ProtossInterface, mode: int, sell: Sell = None):
@@ -173,7 +186,11 @@ def sell(r: tube, interface: ProtossInterface, mode: int, sell: Sell = None):
     interface.event_sell.amount = sell.amount
     req = interface.SerializeToString()
     r.sendafter(b'> ', req)
-    print(r.recvrepeat(1).decode())
+    data = r.recv()
+    print_raw_data(data)
+    print('============================')
+    print(data.decode())
+    print('============================')
 
 def view_history(
     r: tube,
@@ -189,12 +206,15 @@ def view_history(
     interface.event_history.type = history.type
     req = interface.SerializeToString()
     r.sendafter(b'> ', req)
-    data = r.recvrepeat(1)
-    if data.decode() != '> ':
+    data = r.recv()
+    if '> ' not in data.decode():
         for memory_map in sigsegv_parse(data):
             print(memory_map)
     else:
+        print_raw_data(data)
+        print('============================')
         print(f'{data.decode()}')
+        print('============================')
 
 def add_addrbook(
     r: tube,
@@ -212,7 +232,11 @@ def add_addrbook(
     interface.event_addressbook.memo = addrbook.memo
     req = interface.SerializeToString()
     r.sendafter(b'> ', req)
-    print(r.recvrepeat(1).decode())
+    data = r.recv()
+    print_raw_data(data)
+    print('============================')
+    print(f'{data.decode()}')
+    print('============================')
 
 def modify_addrbook(
     r: tube,
@@ -232,7 +256,11 @@ def modify_addrbook(
     interface.event_modify_addressbook.memo = mod_addrbook.memo
     req = interface.SerializeToString()
     r.sendafter(b'> ', req)
-    print(r.recvrepeat(1).decode())
+    data = r.recv()
+    print_raw_data(data)
+    print('============================')
+    print(f'{data.decode()}')
+    print('============================')
 
 def del_addrbook(
     r: tube,
@@ -250,7 +278,11 @@ def del_addrbook(
     interface.event_addressbook.memo = addrbook.memo
     req = interface.SerializeToString()
     r.sendafter(b'> ', req)
-    print(r.recvrepeat(1).decode())
+    data = r.recv()
+    print_raw_data(data)
+    print('============================')
+    print(f'{data.decode()}')
+    print('============================')
 
 def deposit(
     r: tube,
@@ -268,7 +300,11 @@ def deposit(
     interface.event_deposit.memo = deposit.memo
     req = interface.SerializeToString()
     r.sendafter(b'> ', req)
-    print(r.recvrepeat(1).decode())
+    data = r.recv()
+    print_raw_data(data)
+    print('============================')
+    print(f'{data.decode()}')
+    print('============================')
 
 def exchange_handler(r: tube, user_input: str, interface: ProtossInterface):
     mode = EXCHANGE_HANDLER

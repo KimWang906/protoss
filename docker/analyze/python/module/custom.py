@@ -9,6 +9,8 @@ def auto_set(p: tube):
     user_signin(p, ProtossInterface(), USER_HANDLER,
                 set_signin('HyunBin', '1234'))
 
+# SIGSEGV Trigger --------------------------------------------------
+
 def trigger_login_sigsegv(p: tube):
     show_user_info(p, ProtossInterface(), USER_HANDLER) # dummy
     user_signin(p, ProtossInterface(), USER_HANDLER, 
@@ -18,6 +20,12 @@ def trigger_history_sigsegv(p: tube):
     auto_set(p)
     view_history(p, ProtossInterface(), EXCHANGE_HANDLER,
                  set_history(0, 1))
+def trigger_invalid_access(p: tube):
+    auto_set(p)
+    user_signout(p, ProtossInterface(), USER_HANDLER)
+    show_user_info(p, ProtossInterface(), USER_HANDLER)
+
+# -------------------------------------------------------------------
 
 def try_sqli(p):
     user_signup(p, ProtossInterface(), USER_HANDLER,
@@ -34,6 +42,7 @@ def fake_trade(p):
 macros.append(auto_set)
 macros.append(trigger_login_sigsegv)
 macros.append(trigger_history_sigsegv)
+macros.append(trigger_invalid_access)
 macros.append(try_sqli)
 macros.append(fake_trade)
 

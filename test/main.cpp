@@ -7,67 +7,7 @@
 
 using namespace std;
 
-class MySQLClient
-{
-public:
-    MYSQL *conn;
-    const char *hostname;
-    const char *username;
-    const char *password;
-    const char *db_name;
-    MySQLClient()
-    {
-        this->hostname = "poc_db";
-        this->username = "poc";
-        this->password = "poc";
-        this->db_name = "poc_db";
-        this->conn = nullptr;
-    }
 
-    void init_mysql_connect()
-    {
-        this->conn = mysql_init(nullptr);
-
-        if (!mysql_real_connect(
-                this->conn,
-                this->hostname,
-                this->username,
-                this->password,
-                this->db_name,
-                0,
-                nullptr,
-                0))
-        {
-            cout << "[MySQL] Connection Error" << endl;
-            exit(-1);
-        }
-    }
-
-    void handle_error(int status_code)
-    {
-        if (status_code == 0x426)
-            cout << "Duplicate ID" << endl;
-    }
-
-    void exec_query(string SQLquery)
-    {
-        int status_code;
-        if (SQLquery.empty())
-            exit(-1);
-        mysql_query(this->conn, SQLquery.c_str());
-        status_code = mysql_errno(this->conn);
-        handle_error(status_code);
-    }
-
-    MYSQL_RES *exec_query_result(string SQLquery)
-    {
-        if (SQLquery.empty())
-            exit(-1);
-        mysql_query(this->conn, SQLquery.c_str());
-
-        return mysql_store_result(this->conn);
-    }
-};
 
 MySQLClient *client;
 

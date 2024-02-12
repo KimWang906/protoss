@@ -16,11 +16,14 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     rm -rf /var/lib/apt/lists/* && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     apt-get update && \
-    apt-get install -y vim socat mysql-server git python3-all \
-    tmux
+    apt-get install -y vim socat mysql-server git python3.11 \
+    tmux libc6-dbg
 
 RUN git clone https://github.com/pwndbg/pwndbg && \
     cd pwndbg && ./setup.sh
+
+RUN git clone https://github.com/Arinerron/heaptrace.git && \
+    cd heaptrace && make && make install
 
 RUN sed -i -e '$a set follow-fork-mode parent' ~/.gdbinit
 
@@ -33,7 +36,6 @@ RUN if [ ! -f ~/.gdbinit ]; then echo "source /pwndbg/gdbinit.py" >> ~/.gdbinit;
 
 RUN pip install protobuf pwntools numpy
 
-RUN mkdir /home/user
 RUN mkdir -p /home/user/python
 
 COPY libs/ /home/user/libs
@@ -46,9 +48,6 @@ RUN chmod 440 /flag_1
 RUN chown user:root /home/user/*
 
 WORKDIR /home/user
-
-COPY request/ .
-COPY python/ /home/user/python/
 COPY config/ /root/
 
 CMD socat TCP-LISTEN:5060,reuseaddr,fork EXEC:"./protoss"
