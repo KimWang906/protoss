@@ -34,7 +34,7 @@ RUN if [ ! -f ~/.gdbinit ]; then echo "source /pwndbg/gdbinit.py" >> ~/.gdbinit;
     su ${LOW_PRIVILEGE_USER} -c 'if [ ! -f ~/.gdbinit ]; then echo "source /pwndbg/gdbinit.py" >> ~/.gdbinit; fi'; \
     fi
 
-RUN pip install protobuf pwntools numpy
+RUN pip install protobuf pwntools numpy regex
 
 RUN mkdir -p /home/user/python
 

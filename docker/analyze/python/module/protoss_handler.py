@@ -1,5 +1,6 @@
 import json
 import base64
+import regex
 from datetime import *
 from module.memory import *
 from numpy import *
@@ -89,16 +90,35 @@ def user_signup(r: tube, interface: ProtossInterface,
     sign_up_response(r)
     r.unrecv(b'> ')
 
+def is_base64_encoded(s):
+    try:
+        base64.b64decode(s)
+        return True
+    except binascii.Error:
+        return False
+
 def sign_up_response(r: tube):
     r.recvuntil(b'\n')
     raw_data = r.recvuntil(b'>')[:-1]
-    json_res = json.loads(raw_data)
-    raw_username = base64.b64decode(json_res['username'])
-    username = raw_username.decode('UTF-8')
-    print_raw_data(raw_data)
-    print('username: {}'.format(username))
-    print('acc_id: {}'.format(json_res['acc_id']))
-    print('============================')
+    try:
+        pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}')
+        matches = pattern.findall(raw_data.decode())
+        print('============================')
+        print(f"Received: {raw_data.decode()}")
+        print('============================')
+        print_raw_data(raw_data)
+        for json_fmt in matches:
+            json_res = json.loads(json_fmt)
+            print('============================')
+            for key, value in json_res.items():
+                if is_base64_encoded(value):
+                    b_val = base64.b64decode(value)
+                    value = b_val.decode()
+                print(f"{key}: {value}")
+            print('============================')
+    except json.JSONDecodeError:
+        print_raw_data(raw_data)
+        print(f"JsonDecodeError.\nReceived: {raw_data}")
 
 def user_signin(r: tube, interface: ProtossInterface,
                 mode: int, signin: SignIn = None):

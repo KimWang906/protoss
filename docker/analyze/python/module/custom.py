@@ -12,7 +12,6 @@ def auto_set(p: tube):
 # SIGSEGV Trigger --------------------------------------------------
 
 def trigger_login_sigsegv(p: tube):
-    show_user_info(p, ProtossInterface(), USER_HANDLER) # dummy
     user_signin(p, ProtossInterface(), USER_HANDLER, 
         set_signin('SIGSEGV_USERNAME', 'SIGSEGV_PASSWORD'))
 
@@ -25,6 +24,11 @@ def trigger_invalid_access(p: tube):
     user_signout(p, ProtossInterface(), USER_HANDLER)
     show_user_info(p, ProtossInterface(), USER_HANDLER)
 
+def trigger_double_signout(p: tube):
+    auto_set(p)
+    user_signout(p, ProtossInterface(), USER_HANDLER)
+    user_signout(p, ProtossInterface(), USER_HANDLER)
+
 # -------------------------------------------------------------------
 
 def try_sqli(p):
@@ -33,17 +37,25 @@ def try_sqli(p):
     user_signin(p, ProtossInterface(), USER_HANDLER,
             set_signin('SQLI', 'SQLI_PASSWORD'))
 
+def dup_signup(p: tube):
+    user_signup(p, ProtossInterface(), USER_HANDLER,
+            set_signup('HyunBin', '1234'))
+    user_signup(p, ProtossInterface(), USER_HANDLER,
+            set_signup('HyunBin', '1234'))
+
 def fake_trade(p):
     auto_set(p)
     buy(p, ProtossInterface(), EXCHANGE_HANDLER, set_buy(0, 1))
     sell(p, ProtossInterface(), EXCHANGE_HANDLER, set_sell(0, 1))
     view_history(p, ProtossInterface(), EXCHANGE_HANDLER, set_history(0, 0))
-    
+
 macros.append(auto_set)
 macros.append(trigger_login_sigsegv)
 macros.append(trigger_history_sigsegv)
 macros.append(trigger_invalid_access)
+macros.append(trigger_double_signout)
 macros.append(try_sqli)
+macros.append(dup_signup)
 macros.append(fake_trade)
 
 def custom_payload(p: tube):
