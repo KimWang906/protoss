@@ -43,6 +43,15 @@ def dup_signup(p: tube):
     user_signup(p, ProtossInterface(), USER_HANDLER,
             set_signup('HyunBin', '1234'))
 
+def send_deposit(p: tube):
+    auto_set(p)
+    deposit(p, ProtossInterface(), EXCHANGE_HANDLER, 
+            set_deposit('D' * 0x2700, 1, -1))
+
+def send_max_bytes(p: tube):
+    p.sendafter(b'> ', b'A' * 0x2800)
+
+
 def fake_trade(p):
     auto_set(p)
     buy(p, ProtossInterface(), EXCHANGE_HANDLER, set_buy(0, 1))
@@ -56,6 +65,8 @@ macros.append(trigger_invalid_access)
 macros.append(trigger_double_signout)
 macros.append(try_sqli)
 macros.append(dup_signup)
+macros.append(send_max_bytes)
+macros.append(send_deposit)
 macros.append(fake_trade)
 
 def custom_payload(p: tube):

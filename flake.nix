@@ -2,7 +2,7 @@
   description = "PWNABLE Shell env";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
   };
 
   outputs = { self, nixpkgs }: 
@@ -20,7 +20,7 @@
             checksec
             ropgadget
             one_gadget
-            protobuf_25
+            protobuf_23
           ];
 
           shellHook = ''

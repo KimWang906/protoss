@@ -104,6 +104,8 @@ User::handle_signin(User *this, const protoss::SignIn *request) {
 
 SIGSEGV는 무조건 발생함. 분석할 필요가 있음.
 
+```
+
 ## Debugging
 
 우선 프로그램 내에 system 함수가 있기에 디버깅 모드를 `set follow-fork-mode parent`로 설정하여 부모 프로세스 중심으로 디버깅이 되도록 설정한다.  
