@@ -97,85 +97,17 @@ sighandler_t init()
 int main()
 {
     init();
-    int input;
-    while (1)
-    {
-        cout << "Select Options" << endl;
-        cout << "1. Write memo" << endl;
-        cout << "2. Search memo" << endl;
-        cout << "3. Exit" << endl;
-        cout << "Input: ";
-        cin >> input;
-        cin.ignore();
+    /*
+        dummy -> dummy -> victim -> data...
+    */
+    void ****victim = new void ***;
+    *victim = new void **;                             // dereference once
+    **victim = new void *;                             // dereference twice
+    ***victim = (void *)string("HELLO WORLD!").data(); // dereference thrice
 
-        if (input == 1)
-        {
-            MySQLClient *conn = client;
-            string title, memo;
-            // string format = "INSERT INTO memo(title, msg) VALUES(\"%s\", \"%s\");";
-            cout << "Write memo" << endl;
-            cout << "title: ";
-            getline(cin, title);
-            cout << "memo: ";
-            getline(cin, memo);
+    cout << "Victim: " << **victim << endl;
 
-            // char *buffer = new char[format.size() +
-            //                         title.size() +
-            //                         memo.size() + 1];
-            // snprintf(buffer, sizeof(format), format.c_str(), title, memo);
+    client->exec_query("UPDATE ")
 
-            // string query(buffer);
-            string query = fmt::format("INSERT INTO memo(title, msg) VALUES(\"{}\", \"{}\");", title, memo);
-            conn->exec_query(query);
-            cout << "Success" << endl;
-
-            // delete[] buffer;
-        }
-        else if (input == 2)
-        {
-            MySQLClient *conn = client;
-            string title;
-            // string format = "SELECT * FROM memo WHERE title=\"%s\";";
-            MYSQL_RES *exec_result;
-            MYSQL_ROW row;
-            cout << "Search memo" << endl;
-            cout << "title: ";
-            getline(cin, title);
-            // char *buffer = new char[format.size() + title.size() + 1];
-            // snprintf(buffer, format.size(), format.c_str(), title.c_str());
-            // string query(buffer);
-            string query = fmt::format("SELECT * FROM memo WHERE title=\"{}\";", title);
-            exec_result = conn->exec_query_result(query);
-
-            if (exec_result)
-            {
-                if (exec_result == nullptr)
-                {
-                    cout << "Execute Result is "
-                         << "NULL Pointer" << endl;
-                }
-                else
-                {
-                    cout << "Execute Result is "
-                         << "MYSQL_RES Pointer" << endl;
-                    row = mysql_fetch_row(exec_result);
-                    cout << "Title: " << row[1] << endl;
-                    cout << "memo: " << row[2] << endl;
-                }
-            }
-            else
-            {
-                cout << "Failed execute query" << endl;
-                exit(-1);
-            }
-
-            // delete[] buffer;
-        }
-        else
-        {
-            cout << "Exited" << endl;
-            exit(0);
-        }
-    }
     return 0;
 }

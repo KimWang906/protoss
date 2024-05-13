@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   db:
     image: mysql:8.0@sha256:fd8f47c32de2993a704627bffca9b64495c156ec6e85e0af4074cf908830a794

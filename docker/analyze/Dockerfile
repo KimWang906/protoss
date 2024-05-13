@@ -48,8 +48,6 @@ RUN chmod 440 /flag_1
 RUN chown user:root /home/user/*
 
 WORKDIR /home/user
-RUN wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.36.tar.gz && \
-    tar xf mysql-8.0.36.tar.gz && rm -rf mysql-8.0.36.tar.gz
 COPY config/ /root/
 
 CMD socat TCP-LISTEN:5060,reuseaddr,fork EXEC:"./protoss"

@@ -51,6 +51,8 @@ def prompt(r: tube):
             user_input = input("Input: ")
             exchange_handler(r, user_input, ProtossInterface())
         elif user_input == "3":
+            print_raw_data(r.recv())
+        elif user_input == "4":
             print("Exit ProtossInterface ...")
             exit(0)
         else:
